@@ -1,0 +1,42 @@
+{
+  "extension": {
+    "name": "Policy Audit",
+    "version": "1.1",
+    "description": "SmartConsole Extension to add a Policy Audit to the global pane",
+    "author": "Danny Jung",
+    "email": "cp@dannyjung.de",
+    "product-url": "https://community.checkpoint.com/t5/SmartConsole-Extensions/Policy-Audit-Extension/m-p/272730#M605",
+    "provider": "dannyjung.de",
+    "license": "GPL",
+    "extension-version-requirements": {
+      "minimum-version": "1.3"
+    }
+  },
+  "client-extensions-api": {
+    "version": "1.3"
+  },
+  "management-server-api": {
+    "version": "1.3"
+  },
+  "locations": [
+    {
+      "location": "global-pane",
+      "relevant-types": ["*"],
+      "ui-element": {
+        "type": "tab",
+        "caption": "Audit",
+        "tooltip": "Policy Audit",
+        "action": {
+          "details-level": "full",
+          "method": "get",
+          "trigger-id": "audit-globalpane",
+          "disable-automatic-refresh": true,
+          "url": "code.html"
+        }
+      }
+    }
+  ],
+  "requested-permissions": {
+    "client": ["get-read-only-session", "run-read-only-commands"]
+  }
+}

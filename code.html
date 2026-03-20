@@ -1,0 +1,977 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="UTF-8">
+<title>Security Policy Audit</title>
+<style>
+:root{
+  --bg:#f0f0f0;--bg2:#ffffff;--bg3:#f8f8fa;--bg4:#e8e8ec;
+  --inp:#ffffff;--brd:#d0d0d8;--brd2:#b8b8c8;
+  --t:#1a1a2e;--t2:#555570;--t3:#8888a0;
+  --berry:#EE0C5D;--green:#2e8b3e;--blue:#3b6fa0;
+  --crit:#d4173e;--high:#c75a10;--med:#9a7b12;--low:#2e8b3e;
+  --r:4px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',-apple-system,sans-serif;font-size:13px;background:var(--bg);color:var(--t);line-height:1.5;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
+.hdr{padding:8px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--brd);background:var(--bg2)}
+.hdr .logo{width:20px;height:20px;stroke:var(--berry);flex-shrink:0}
+.hdr-t{font-size:15px;font-weight:600;flex:1}
+.hdr-v{font-size:10px;color:var(--t3);margin-left:7px;font-weight:400}
+.conn{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t3)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--brd)}
+.dot.g{background:var(--green);box-shadow:0 0 4px rgba(46,139,62,.4)}
+.dot.y{background:var(--med);animation:pls 1s infinite}
+.dot.r{background:var(--crit)}
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
+.ctrl{padding:8px 12px;display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--brd);background:var(--bg2)}
+.ctrl-row{display:flex;align-items:center;gap:6px}
+.ctrl-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;font-weight:700;min-width:55px}
+select.sl{flex:1;background:var(--inp);border:1px solid var(--brd);color:var(--t);padding:5px 24px 5px 8px;border-radius:var(--r);font-size:13px;font-family:inherit;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%238888a0' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center}
+select.sl:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(59,111,160,.12)}
+select.sl optgroup{color:var(--berry);font-weight:700;font-style:normal;font-size:12px}
+select.sl option{color:var(--t);font-weight:400;font-size:13px}
+.btn-csv{background:var(--bg2);color:var(--t2);border:1px solid var(--brd);border-radius:var(--r);padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;display:none;white-space:nowrap}
+.btn-csv:hover{background:var(--bg4);color:var(--t)}
+.btn-ico{border:none;background:transparent;cursor:pointer;padding:2px;display:inline-flex;align-items:center;opacity:.6;vertical-align:middle}
+.btn-ico:hover{opacity:1}
+.btn-ico svg{width:14px;height:14px}
+.ib{background:none;border:1px solid transparent;border-radius:var(--r);padding:4px 6px;cursor:pointer;color:var(--t3);transition:all .15s;display:flex;align-items:center}.ib:hover{background:var(--bg3);border-color:var(--brd);color:var(--t)}.ib svg{width:14px;height:14px}
+.tinfo{display:none;padding:10px 12px;border-bottom:1px solid var(--brd);background:var(--bg3)}
+.tinfo.vi{display:block}
+.tinfo-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.tinfo-n{font-size:14px;font-weight:700;flex:1}
+.sev{font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+.sev.critical{background:rgba(212,23,62,.1);color:var(--crit)}.sev.high{background:rgba(199,90,16,.1);color:var(--high)}
+.sev.medium{background:rgba(154,123,18,.1);color:var(--med)}.sev.low{background:rgba(46,139,62,.1);color:var(--low)}
+.tinfo-d{font-size:12px;color:var(--t2)}.tinfo-i{font-size:11px;color:var(--t3);margin-top:2px}
+.content{flex:1;overflow-y:auto;padding:10px 12px}
+.wel{text-align:center;padding:30px 10px}.wel svg{width:40px;height:40px;color:var(--t3);opacity:.4;margin-bottom:10px}
+.wel h3{font-size:14px;color:var(--t2);margin-bottom:5px;font-weight:500}.wel p{font-size:12px;color:var(--t3);line-height:1.5}
+.ldg{text-align:center;padding:30px 10px}
+.spin{width:24px;height:24px;border:2px solid var(--brd);border-top-color:var(--berry);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 10px}
+@keyframes sp{to{transform:rotate(360deg)}}.ldg-t{font-size:12px;color:var(--t2)}
+.sum{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg2);border-radius:var(--r);margin-bottom:10px;border:1px solid var(--brd)}
+.sum-n{font-size:18px;font-weight:700;color:var(--berry)}.sum-l{font-size:12px;color:var(--t2)}
+.rc{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--r);margin-bottom:6px;overflow:hidden}.rc:hover{border-color:var(--brd2)}
+.rh{display:flex;align-items:center;gap:6px;padding:7px 10px;cursor:pointer}.rh:hover{background:var(--bg3)}
+.rnum{font-size:11px;font-weight:700;color:var(--t3);background:var(--bg4);padding:2px 6px;border-radius:3px;font-family:Consolas,monospace}
+.rname{font-size:13px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rdis{font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(212,23,62,.08);color:var(--crit);font-weight:600}
+.runu{font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(154,123,18,.08);color:var(--med);font-weight:600}
+.rgo{border:none;background:var(--bg4);color:var(--blue);cursor:pointer;font-size:11px;padding:3px 8px;border-radius:3px;font-family:inherit;white-space:nowrap}
+.rgo:hover{background:var(--blue);color:#fff}
+.rd{display:none;padding:6px 10px 10px;border-top:1px solid var(--brd);font-size:12px}.rc.ex .rd{display:block}
+.rfn{color:var(--high);margin-bottom:6px;display:flex;align-items:flex-start;gap:4px;font-size:12px}.rfn:before{content:'\26A0';flex-shrink:0}
+.rdg{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+.rdi-l{color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.3px}.rdi-v{color:var(--t2);word-break:break-all;font-size:12px}
+.rcmt{margin-top:5px;padding:5px 8px;background:var(--bg3);border:1px solid var(--brd);border-radius:3px;color:var(--t3);font-style:italic;font-size:11px}
+.nr{text-align:center;padding:30px 10px;color:var(--t3)}.nr svg{width:34px;height:34px;opacity:.4;margin:0 auto 10px;display:block}.nr p{font-size:12px}
+.obj-r{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--r);padding:8px 10px;margin-bottom:6px}
+.obj-f{font-size:12px;color:var(--high);margin-top:3px}.obj-m{font-size:11px;color:var(--t3);margin-top:2px}
+.obj-row{display:flex;align-items:center;gap:5px;padding:3px 0;font-size:12px}
+.obj-icon{width:12px;height:12px;flex-shrink:0;display:inline-flex}
+.obj-icon svg{width:12px;height:12px}
+.cfg-i{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:12px;color:var(--t2)}
+.cfg-i input{background:var(--inp);border:1px solid var(--brd);color:var(--t);padding:3px 5px;border-radius:3px;width:50px;font-size:12px;text-align:center}
+.sbar{padding:4px 12px;border-top:1px solid var(--brd);display:flex;align-items:center;gap:12px;font-size:10px;color:var(--t3);background:var(--bg2);flex-shrink:0}
+.sbar .sp{flex:1}
+.mt{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t3)}
+.sw2{display:inline-flex;border:1px solid var(--brd);border-radius:var(--r);overflow:hidden}
+.s2a{font-family:inherit;font-size:10px;padding:2px 8px;border:none;background:var(--bg4);color:var(--t3);cursor:pointer;line-height:1.3}.s2a:hover{background:var(--bg2);color:var(--blue)}.s2a.s2s{background:var(--bg2);color:var(--t)}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="hdr">
+  <svg class="logo" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+  <div class="hdr-t">Security Policy Audit<span class="hdr-v">v1.1</span></div>
+  <div style="display:flex;align-items:center;gap:6px"><button class="ib" onclick="reloadAll()" title="Reload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/></svg></button><div class="conn"><span class="dot" id="dot"></span><span id="cst">Ready</span></div></div>
+</div>
+<div class="ctrl">
+  <div class="ctrl-row"><span class="ctrl-lbl">Check</span>
+    <select class="sl" id="tSel" onchange="onCheckChange()">
+      <option value="">Select a check...</option>
+      <optgroup label="Security Policy Checks"><option value="disabled-rules">Disabled Rules Detection</option><option value="no-hit-rules">Zero-Hit Rules</option><option value="stealth-rule">Firewall Stealth Rule</option><option value="duplicate-rules">Duplicate Rules</option><option value="shadowed-rules">Shadowed Rules (Ordering)</option><option value="temp-rules">Temporary Rules</option><option value="unnamed-rules">Missing Rule Names</option><option value="large-sections">Overly Long Sections</option><option value="any-any-accept">Any-Any Accept Rules</option><option value="no-comments">Rules Without Comments</option><option value="expired-time">Expired Time Objects</option></optgroup>
+      <optgroup label="Object &amp; Network Config"><option value="unused-obj">Unused Network Objects</option><option value="overlap-obj">Overlapping Objects</option><option value="dup-obj">Duplicate Objects</option><option value="reserved-words">Reserved Words &amp; Characters</option><option value="single-grp">Single Member Groups</option><option value="empty-grp">Empty Groups</option><option value="svc-ping">Service Objects - Ping</option><option value="svc-ssh">Service Objects - SSH</option></optgroup>
+      <optgroup label="Logging &amp; Monitoring"><option value="crit-nolog">Critical Rules Not Logging</option><option value="excess-log">Excessive Logging</option><option value="incon-log">Inconsistent Layer Logging</option><option value="alert-nolog">Alert Without Log</option></optgroup>
+    </select>
+  </div>
+  <div class="ctrl-row"><span class="ctrl-lbl">Package</span><select class="sl" id="pkgSel" disabled onchange="onPkgChange()"><option value="">All Packages ()</option></select></div>
+  <div class="ctrl-row" style="justify-content:flex-end"><button class="btn-csv" id="expBtn" onclick="doExport()">CSV Export</button></div>
+</div>
+<div class="tinfo" id="tinfo"><div class="tinfo-top"><span class="tinfo-n" id="tNm"></span><span class="sev" id="tSev"></span><button class="btn-ico" id="refBtn" onclick="runTask()" title="Re-run check"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M16,5L12.602,9.221L9,5h2.534C10.761,3.247,9.037,2.01,6.998,2.01c-2.757,0-4.992,2.236-4.992,4.995s2.235,4.994,4.992,4.994c.852,0,1.642-.233,2.344-.61l1.361,1.551C9.627,13.614,8.36,14.009,6.997,14.009c-3.865,0-6.999-3.135-6.999-7.002S3.132.004,6.997.004c3.166,0,5.823,2.11,6.686,5h2.317z" transform="translate(0 1)" fill="#2e3f58" fill-rule="evenodd"/></svg></button></div><div class="tinfo-d" id="tDesc"></div><div class="tinfo-i" id="tImp"></div></div>
+<div class="content" id="rc0"><div class="wel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg><h3>Security Policy Audit</h3><p>Select a check above to begin.</p></div></div>
+<div class="sbar"><span id="sMsg">Ready</span><span class="sp"></span><span class="mt">Mode: <span class="sw2"><button class="s2a s2s" id="sAuto" onclick="setApiMode('auto')">Auto</button><button class="s2a" id="sCommit" onclick="setApiMode('commit')">Commit</button></span></span></div>
+</div>
+<script>
+
+var ICO={
+host:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M8,8v1h1v1H3V9h1V8H0V0h12V8H8ZM5,9H7V8H5V9Zm6-3H1v1H11V6Z" transform="translate(2 3)" fill-rule="evenodd"/></svg>',
+network:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><rect x="0" y="10" width="6" height="5" rx="1.2"/><rect x="10" y="10" width="6" height="5" rx="1.2"/><rect x="5" y="0" width="6" height="5" rx="1.2"/><rect x="7" y="5.5" width="2" height="2"/><rect x="2.5" y="8" width="2" height="2" transform="rotate(-90 3.5 9)"/><rect x="11.5" y="8" width="2" height="2"/><rect x="2.5" y="7" width="11" height="2"/></svg>',
+group:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M14,15h-3v-1h3v-3h1v4H14zM14,3h-3V2h4v4h-1V3zM6,8C4.9,8,4,7.1,4,6s.9-2,2-2,2,.9,2,2S7.1,8,6,8zM11,8c-1.1,0-2-.9-2-2s.9-2,2-2,2,.9,2,2-0.9,2-2,2zM6,13c-1.1,0-2-.9-2-2s.9-2,2-2,2,.9,2,2S7.1,13,6,13zM11,13c-1.1,0-2-.9-2-2s.9-2,2-2,2,.9,2,2-0.9,2-2,2zM3,6H2V2H6V3H3V6zM3,14H6v1H2V11H3V14z" fill-rule="evenodd"/></svg>',
+gateway:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M15,12H2c-.6,0-1-.4-1-1V7c0-.6.6-1,.6-1L3.5,4h9.9l2,2s.6.4.6,1v4c0,.6-.4,1-1,1zM13,7H4c-.6,0-1,.4-1,1v2c0,.6.4,1,1,1h9c.6,0,1-.4,1-1V8c0-.6-.4-1-1-1zM11,10V9h1v1H11zM9,10V9h1v1H9zM10,8h1v1h-1V8zM12,8h1v1h-1V8zM4,8h4v2H4V8z" fill-rule="evenodd"/></svg>',
+management:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M15 15H8a1 1 0 01-1-1V8a1 1 0 011-1h7a1 1 0 011 1v6a1 1 0 01-1 1zm-2.224-4.09L11.5 8.997l-1.221 1.905-2.308-1.859 1.432 3.959h4.247l1.349-3.993-2.223 1.901zM10 6h1-1zM9 5h1v1H9V5zm3 0v1h-1V5h1zm1 0a1 1 0 00-1-1H3a1 1 0 00-1 1v2a1 1 0 001 1h3v1H1a1 1 0 01-1-1V4a1 1 0 011-1H.643L2.5 1h9.857l2 2H14a1 1 0 011 1v2h-2V5zM3 5h4v1h1-.75c-.602 0-1.08.433-1.2 1H3V5z" fill-rule="evenodd"/></svg>',
+dynamic:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M15,7.5c0,1.403-1.782,2.605-4.337,3.163C10.105,13.218,8.903,15,7.5,15S4.895,13.218,4.337,10.663C1.781,10.105,0,8.903,0,7.5S1.781,4.895,4.337,4.337C4.895,1.781,6.096,0,7.5,0S10.105,1.781,10.663,4.337C13.218,4.895,15,6.096,15,7.5zM7.5,13c.802,0,1.507-.845,1.965-2.137-.63.08-1.28.137-1.965.137s-1.335-.057-1.965-.137C5.992,12.155,6.698,13,7.5,13zM10,7.5c0-.812-.085-1.577-.229-2.271-.694-.144-1.459-.229-2.271-.229s-1.577.085-2.271.229C5.085,5.923,5,6.688,5,7.5s.085,1.577.229,2.271c.694.144,1.459.229,2.271.229s1.577-.085,2.271-.229C9.915,9.077,10,8.312,10,7.5zM2,7.5c0,.802.845,1.507,2.137,1.965C4.057,8.835,4,8.185,4,7.5s.057-1.335.137-1.965C2.845,5.992,2,6.698,2,7.5zM7.5,2c-.802,0-1.508.845-1.965,2.137C6.165,4.057,6.815,4,7.5,4s1.335.057,1.965.137C9.007,2.845,8.302,2,7.5,2zm3.363,3.535c.08.63.137,1.28.137,1.965s-.057,1.335-.137,1.965C12.155,9.007,13,8.302,13,7.5s-.845-1.508-2.137-1.965z" transform="translate(.5 .5)" fill-rule="evenodd"/></svg>',
+address_range:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M12,7.097V.004L14.981,3.562,12,7.097zM9.967,6h.987V7.046H9.967V6zm0-2h.987V5.046H9.967V4zm0-2h.987V3.046H9.967V2zm0-2h.987V1.046H9.967V0zM7.967,6h.987V7.046H7.967V6zm0-2h.987V5.046H7.967V4zm0-2h.987V3.046H7.967V2zm0-2h.987V1.046H7.967V0zM5.967,6h.987V7.046H5.967V6zm0-2h.987V5.046H5.967V4zm0-2h.987V3.046H5.967V2zm0-2h.987V1.046H5.967V0zM3.967,6h.987V7.046H3.967V6zm0-2h.987V5.046H3.967V4zm0-2h.987V3.046H3.967V2zm0-2h.987V1.046H3.967V0zM2.969.004V7.097L-.012,3.562,2.969.004z" transform="translate(.52 4.45)" fill-rule="evenodd"/></svg>',
+domain:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M10.469,5.063c-1.232,0-2.256-.881-2.483-2.046H4.993V4.236L8.787,8.03H12.993v5.029H7.993V8.646L4.375,5.028H-.007V-.001H4.993V2.052H7.986C8.21.883,9.235,0,10.469,0A2.531,2.531,0,1,1,10.469,5.063z" transform="translate(1.5 1.47)" fill-rule="evenodd"/></svg>',
+rescan:'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path d="M8.009,14v2L4.065,12.967,8.009,10v1.966a3.974,3.974,0,0,0,3.315-6.145L12.858,4.5A5.981,5.981,0,0,1,8.009,14ZM7.992,4A3.975,3.975,0,0,0,4.64,10.138l-1.55,1.3A5.988,5.988,0,0,1,7.992,2V0l3.844,3.028L7.992,6V4Z" fill="#2e3f58" fill-rule="evenodd"/></svg>'
+};
+
+var CMAP={aquamarine:'#5FECBD',black:'#4C4C4C',blue:'#7BA0FF','crete blue':'#485CD4',burlywood:'#8B7355',cyan:'#00BFFF','dark green':'#808000',khaki:'#BDB76B',orchid:'#800080','dark orange':'#CD6600','dark sea green':'#295922',pink:'#E13C8E',turquoise:'#20B2AA','dark blue':'#4A5B85',firebrick:'#CC4D4D',brown:'#CD6B3C','forest green':'#7BAD34',gold:'#FFD700','dark gold':'#CDAD00',gray:'#B6B6B6','dark gray':'#767676','light green':'#A5E166','lemon chiffon':'#FFFACD',coral:'#EF7460','sea green':'#59BF48','sky blue':'#6D9CD7',magenta:'#ED2891',purple:'#BA55D3','slate blue':'#A186ED','violet red':'#BC57C2','navy blue':'#3F3FBD',olive:'#617D28',orange:'#FFBB39',red:'#FF6161',sienna:'#653600',yellow:'#FFF600'};
+
+var T={
+'disabled-rules':{n:'Disabled Rules Detection',s:'medium',d:'Rules that are disabled without documentation.',i:'Security gaps from forgotten disables.'},
+'no-hit-rules':{n:'Zero-Hit Rules',s:'low',d:'Rules with zero or stale hits.',i:'Policy bloat.',cfg:true,cfgL:'Days:',cfgD:90},
+'stealth-rule':{n:'Firewall Stealth Rule',s:'critical',d:'Verifies a Drop rule exists in each policy that covers all gateways and management servers in the destination field.',i:'Without a stealth rule, gateways and management servers are exposed to direct attacks.'},
+'duplicate-rules':{n:'Duplicate Rules',s:'medium',d:'Identical source/destination/service rules.',i:'Inconsistent action/logging.'},
+'shadowed-rules':{n:'Shadowed Rules (Ordering)',s:'high',d:'Rules shadowed by more permissive rules above.',i:'Rules never match.'},
+'temp-rules':{n:'Temporary Rules',s:'medium',d:'Rules with test/tmp/temp/temporary in name or comments.',i:'Forgotten test rules weaken security.'},
+'unnamed-rules':{n:'Missing Rule Names',s:'low',d:'Rules without descriptive names.',i:'Poor documentation.'},
+'large-sections':{n:'Overly Long Sections',s:'low',d:'Sections exceeding rule count threshold.',i:'Difficult navigation.',cfg:true,cfgL:'Max:',cfgD:100},
+'any-any-accept':{n:'Any-Any Accept Rules',s:'critical',d:'At least 2 of Source/Destination/Service are Any with Accept action.',i:'Overly permissive rule.'},
+'no-comments':{n:'Rules Without Comments',s:'low',d:'Rules lacking documentation.',i:'Difficult reviews.'},
+'expired-time':{n:'Expired Time Objects',s:'medium',d:'Rules with expired time objects.',i:'Unexpected behavior.'},
+'unused-obj':{n:'Unused Network Objects',s:'low',d:'Use SmartConsole Object Explorer or Global Object Explorer (MDS) to find unused objects.',i:'Database bloat.'},
+'overlap-obj':{n:'Overlapping Objects',s:'medium',d:'Networks whose subnets overlap, or address ranges that overlap with networks or other ranges.',i:'Ambiguous matching, confusion.'},
+'dup-obj':{n:'Duplicate Objects',s:'medium',d:'Hosts with same IP, networks with same subnet, gateways/management/dynamic/address-range/domain objects with duplicate settings, groups with identical members.',i:'Confusion, bloat, inconsistent usage.'},
+'reserved-words':{n:'Reserved Words & Characters',s:'high',d:'Object names containing illegal characters, INSPECT reserved words, or forbidden prefixes per sk40179.',i:'Policy installation failures, unexpected behavior, security risks.'},
+'single-grp':{n:'Single Member Groups',s:'low',d:'Groups with one object.',i:'Unnecessary indirection.'},
+'empty-grp':{n:'Empty Groups',s:'medium',d:'Groups with no members.',i:'Rules may not work.'},
+'crit-nolog':{n:'Critical Rules Not Logging',s:'high',d:'Drop/Reject rules without logging.',i:'No audit trail.'},
+'excess-log':{n:'Excessive Logging',s:'low',d:'High-volume logging on common traffic.',i:'Log bloat.'},
+'incon-log':{n:'Inconsistent Layer Logging',s:'low',d:'Same traffic logged differently.',i:'Confusing logs.'},
+'alert-nolog':{n:'Alert Without Log',s:'medium',d:'Alert enabled, logging not.',i:'Alerts without data.'},
+'svc-ping':{n:'Service Objects - Ping',s:'medium',d:'Rules using icmp-proto or the application "ICMP Protocol" instead of echo-request or icmp-requests.',i:'icmp-proto allows all ICMP types; echo-request or icmp-requests are sufficient for ping.'},
+'svc-ssh':{n:'Service Objects - SSH',s:'high',d:'Rules using ssh (v1+v2) instead of the more secure ssh_version_2.',i:'SSHv1 has known vulnerabilities; ssh_version_2 enforces SSHv2 only.'},
+};
+
+var ANY='97aeb369-9aea-11d5-bd16-0090272ccb30',ACCEPT='6c488338-8eec-4103-ad21-cd461ac2c472',DROP='6c488338-8eec-4103-ad21-cd461ac2c473',REJ='6c488338-8eec-4103-ad21-cd461ac2c474';
+var CP_DEF=['Net_10.0.0.0','Net_172.16.0.0','Net_192.168.0.0','Net_10.0.0.0-0','Net_172.16.0.0-0','Net_192.168.0.0-0','InternalZone','ExternalZone','DMZZone','LocalMachine','All_Internet','IPv6_Link_Local_Hosts'];
+var pkgs=[],curTask=null,curRes=[],scanQ=[],inlineQ=[],scanRes=[],scanCb=null,cbi=0,ready=false,lastDups=null;
+var apiMode='auto';
+
+function objIco(type,color){
+    var svg=ICO[type]||ICO.host;var hex=CMAP[color]||CMAP.black||'#4C4C4C';
+    svg=svg.replace(/\sfill="[^"]*"/g,'').replace(/\sfill-rule="[^"]*"/g,'').replace(/<style>[\s\S]*?<\/style>/g,'').replace(/\sclass="[^"]*"/g,'');
+    return '<span class="obj-icon" style="color:'+hex+'"><svg'+svg.split('<svg')[1].replace(/<(path|rect|circle|polygon)/g,'<$1 fill="'+hex+'"')+'</span>';
+}
+function objClr(color){return CMAP[color]||CMAP.black||'#4C4C4C';}
+
+function apiCall(cmd,params,cbName){
+    if(apiMode==='commit'){
+        var s=cmd;if(params)Object.keys(params).forEach(function(k){var v=params[k];s+=' '+k+' '+(typeof v==='object'?JSON.stringify(v):v);});
+        s+=' --format json';
+        smxProxy.sendRequest('request-commit',{commands:[s]},cbName);
+    }else{
+        smxProxy.sendRequest('run-readonly-command',{command:cmd,parameters:params},cbName);
+    }
+}
+function apiResp(r){
+    if(apiMode==='commit'){if(Array.isArray(r)&&r[0])return r[0];if(r&&r.response)return r.response;return r;}
+    if(r&&r.response)return r.response;
+    if(r&&r.type)return r;
+    return null;
+}
+function setApiMode(m){
+    if(apiMode===m)return;apiMode=m;
+    document.getElementById('sAuto').classList.toggle('s2s',m==='auto');
+    document.getElementById('sCommit').classList.toggle('s2s',m==='commit');
+    document.getElementById('sMsg').textContent='Mode: '+m;
+}
+
+function reloadAll(){
+    pkgs=[];ready=false;curTask=null;curRes=[];svcNameMap={};svcLoaded=false;rwCachedObjs=null;
+    document.getElementById('tSel').selectedIndex=0;
+    document.getElementById('pkgSel').disabled=true;
+    document.getElementById('pkgSel').innerHTML='<option value="">All Packages ()</option>';
+    document.getElementById('tinfo').classList.remove('vi');
+    document.getElementById('expBtn').style.display='none';
+    document.getElementById('rc0').innerHTML='<div class="wel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg><h3>Security Policy Audit</h3><p>Select a check above to begin.</p></div>';
+    document.getElementById('dot').className='dot';
+    document.getElementById('cst').textContent='Ready';
+    document.getElementById('sMsg').textContent='Ready';
+}
+
+function init(){getCtx();}
+function getCtx(){setSt('ld','Connecting...');try{smxProxy.sendRequest('get-context',null,'onCtx');}catch(e){setSt('er','No SmartConsole');enableDemo();}}
+function onCtx(v){dl('Context OK ('+apiMode+')','in');setSt('ld','Loading packages...');apiCall('show packages',{'details-level':'full','limit':500},'onPkgs');}
+function onPkgs(r){
+    var d=apiResp(r);
+    // Production: details-level full returns packages with access-layers
+    if(d&&d.packages&&d.packages.length&&d.packages[0]['access-layers']){
+        pkgs=d.packages.map(function(p){return{name:p.name,uid:p.uid,'access-layers':p['access-layers']||[],'installation-targets':p['installation-targets']||'all'};});
+        fillPkg();return;
+    }
+    // Demo Mode: details-level full failed - retry without it to get package names
+    if(!d||!d.packages){apiCall('show packages',{'limit':500},'onPkgsFallback');return;}
+    // Got packages but no layers (shouldn't happen but handle it)
+    pkgs=d.packages.map(function(p){return{name:p.name,uid:p.uid,'access-layers':[],'installation-targets':'all'};});
+    fillLayersFallback(pkgs,fillPkg);
+}
+function onPkgsFallback(r){
+    var d=apiResp(r);
+    if(!d||!d.packages||!d.packages.length){apiCall('show access-layers',{'limit':500},'onLFB');return;}
+    var list=d.packages,idx=0;
+    pkgs=list.map(function(p){return{name:p.name,uid:p.uid,'access-layers':[],'installation-targets':'all'};});
+    function fetchNext(){
+        if(idx>=pkgs.length){fillLayersFallback(pkgs,fillPkg);return;}
+        var p=pkgs[idx];idx++;
+        var cb='_pf'+(++cbi);
+        window[cb]=function(r2){
+            delete window[cb];
+            var d2=apiResp(r2);
+            if(d2&&d2['installation-targets'])p['installation-targets']=d2['installation-targets'];
+            if(d2&&d2['access-layers'])p['access-layers']=d2['access-layers'];
+            fetchNext();
+        };
+        apiCall('show package',{'name':p.name},cb);
+    }
+    fetchNext();
+}
+function fillLayersFallback(missingPkgs,done){
+    setSt('ld','Loading layers...');
+    fetchAll('show access-layers','access-layers',function(layers){
+        var claimed=[];
+        // First pass: assign by name prefix
+        missingPkgs.forEach(function(p){
+            p['access-layers']=layers.filter(function(l){return l.name.indexOf(p.name)===0;});
+            p['access-layers'].forEach(function(l){if(claimed.indexOf(l.uid)<0)claimed.push(l.uid);});
+        });
+        // Second pass: assign unclaimed layers to packages still missing layers
+        var unclaimed=layers.filter(function(l){return claimed.indexOf(l.uid)<0;});
+        missingPkgs.forEach(function(p){
+            if(!p['access-layers'].length){
+                p['access-layers']=unclaimed;
+            }
+        });
+        done();
+    });
+}
+function onLFB(r){
+    var d=apiResp(r);
+    if(!d||!d['access-layers']){setSt('er','Failed');return;}
+    var layers=d['access-layers'],pkgNames=[],pkgMap={};
+    layers.forEach(function(l){var m=l.name.match(/^(.+)\s+Network$/);if(m&&m[1]){pkgNames.push(m[1]);pkgMap[m[1]]={name:m[1],uid:m[1],'access-layers':[],'installation-targets':'all'}}});
+    layers.forEach(function(l){
+        var best=null;
+        pkgNames.forEach(function(n){if(l.name.indexOf(n)===0&&(!best||n.length>best.length))best=n;});
+        if(!best&&pkgNames.length)best=pkgNames[0];
+        if(best)pkgMap[best]['access-layers'].push(l);
+    });
+    pkgs=pkgNames.length?pkgNames.map(function(n){return pkgMap[n];}):[{name:'All Layers',uid:'all','access-layers':layers,'installation-targets':'all'}];
+    fillPkg();
+}
+function fillPkg(){
+    var s=document.getElementById('pkgSel'),tl=0;s.innerHTML='<option value="all">All Packages ('+pkgs.length+')</option>';
+    pkgs.forEach(function(p,i){var ls=p['access-layers']||[];tl+=ls.length;var o=document.createElement('option');o.value=i;o.textContent=p.name;s.appendChild(o);});
+    s.disabled=false;ready=true;
+    setSt('ok','Ready');
+    if(curTask)runTask();
+}
+function onPkgChange(){if(curTask&&ready)runTask();}
+function onCheckChange(){
+    var k=document.getElementById('tSel').value;
+    if(!k)return;
+    selTask(k);
+    if(!ready){
+        init();
+    }else{
+        runTask();
+    }
+}
+function getLayers(){
+    var v=document.getElementById('pkgSel').value,ls=[];
+    if(v==='all'||v==='')pkgs.forEach(function(p){(p['access-layers']||[]).forEach(function(l){ls.push({name:l.name,uid:l.uid,pkg:p.name});});});
+    else{var p=pkgs[parseInt(v)];if(p)(p['access-layers']||[]).forEach(function(l){ls.push({name:l.name,uid:l.uid,pkg:p.name});});}
+    return ls;
+}
+function fetchRB(layer,off){var cb='_rb'+(++cbi);window[cb]=function(r){delete window[cb];procPage(r,layer);};var rbParam=layer.uid&&layer.uid!==layer.name?{'uid':layer.uid,'show-hits':'true','details-level':'full','use-object-dictionary':true,'limit':500,'offset':off}:{'name':layer.name,'show-hits':'true','details-level':'full','use-object-dictionary':true,'limit':500,'offset':off};apiCall('show access-rulebase',rbParam,cb);}
+function procPage(r,layer){
+    var d=apiResp(r);
+    if(!d){procInlOrNext();return;}
+    var rb=d.rulebase||[],dict=d['objects-dictionary']||[],om={};dict.forEach(function(o){om[o.uid]=o;});
+    rb.forEach(function(item){
+        if(item.type==='access-section'&&item.rulebase){
+            if(scanCb===chkLargeSec){var mx=getCfg()||100;if(item.rulebase.length>mx)scanRes.push({name:item.name||'Unnamed','rule-number':'\u00a7',layerName:d.name||layer.name,pkgName:layer.pkg,_src:'-',_dst:'-',_svc:'-',_act:'-',_trk:'-',finding:item.rulebase.length+' rules (max: '+mx+')'});}
+            item.rulebase.forEach(function(rule){if(rule.type==='access-rule')procRule(rule,d,layer,om,item.name);});
+        }else if(item.type==='access-rule')procRule(item,d,layer,om,'');
+    });
+    if(d.to<d.total)fetchRB(layer,d.to);else procInlOrNext();
+}
+function procRule(rule,d,layer,om,sec){
+    var f=scanCb(rule,d.name||layer.name,om);
+    if(f){var rn=rule['rule-number'];if(layer.parentRuleNum)rn=layer.parentRuleNum+'.'+rn;scanRes.push(Object.assign(enrich(rule,om),{layerName:d.name||layer.name,sectionName:sec,pkgName:layer.pkg,'rule-number':rn,finding:f}));}
+    if(rule['inline-layer']){var il=rule['inline-layer'];var pn=rule['rule-number'];if(layer.parentRuleNum)pn=layer.parentRuleNum+'.'+pn;var ilUid=il.uid||il;if(inlineUIDs.indexOf(ilUid)<0)inlineUIDs.push(ilUid);inlineQ.push({name:il.name||il,uid:ilUid,pkg:layer.pkg,parentRuleNum:pn});}
+}
+function procInlOrNext(){if(scanQ.length){scanNext();return;}if(inlineQ.length){var il=inlineQ.shift();var ilUid=il.uid;if(inlineUIDs.indexOf(ilUid)<0){inlineUIDs.push(ilUid);}setSt('ld','Inline: '+il.name);fetchRB(il,0);return;}onDone();}
+function enrich(rule,om){
+    var rn=function(items){if(!items)return'Any';if(!Array.isArray(items))items=[items];return items.map(function(i){return typeof i==='string'?(om[i]?om[i].name:i):(i.name||i.uid||'?');}).join(', ')||'Any';};
+    var ra=function(a){if(!a)return'N/A';if(typeof a==='string'){if(a===ACCEPT)return'Accept';if(a===DROP)return'Drop';if(a===REJ)return'Reject';return om[a]?om[a].name:a;}return a.name||'N/A';};
+    var rt=function(t){if(!t)return'None';if(typeof t==='object'&&t.type){var o=om[t.type];return o?o.name:t.type;}return String(t);};
+    return Object.assign({},rule,{_src:rn(rule.source),_dst:rn(rule.destination),_svc:rn(rule.service),_act:ra(rule.action),_trk:rt(rule.track)});
+}
+function scanRB(layers,fn){scanRes=[];scanCb=fn;scanQ=layers.slice();inlineQ=[];inlineUIDs=[];
+    scanNext();}
+function scanNext(){if(!scanQ.length){procInlOrNext();return;}var l=scanQ.shift();if(l.uid&&inlineUIDs.indexOf(l.uid)>=0){scanNext();return;}setSt('ld',l.name);fetchRB(l,0);}
+function onDone(){curRes=scanRes;displayRes(curRes);setSt('ok',curRes.length+' finding(s)');document.getElementById('expBtn').style.display=curRes.length?'inline-flex':'none';}
+
+function selTask(k){curTask=k;var t=T[k];document.getElementById('tinfo').classList.add('vi');document.getElementById('tNm').textContent=t.n;var sv=document.getElementById('tSev');sv.textContent=t.s;sv.className='sev '+t.s;document.getElementById('tDesc').textContent=t.d;document.getElementById('tImp').textContent='Impact: '+t.i;}
+function runTask(){
+    var k=document.getElementById('tSel').value||curTask;if(!k)return;selTask(k);curRes=[];lastDups=null;
+    var t=T[k];showLdg(t.n+'...');setSt('ld',t.n);dl('=== '+t.n+' ===','in');
+    var layers=getLayers();if(!layers.length&&k!=='dup-obj'&&k!=='empty-grp'&&k!=='single-grp'&&k!=='stealth-rule'&&k!=='reserved-words'){showNR('No layers.');return;}
+    var rbC={'disabled-rules':chkDisabled,'no-hit-rules':chkNoHits,'any-any-accept':chkAnyAnyAccept,'unnamed-rules':chkUnnamed,'no-comments':chkNoCmt,'crit-nolog':chkCritNoLog,'alert-nolog':chkAlertNoLog,'large-sections':chkLargeSec,'shadowed-rules':chkShadowed,'duplicate-rules':chkDup,'temp-rules':chkTemp};
+    if(rbC[k]){scanRB(layers,rbC[k]);return;}
+    if(k==='empty-grp'){runObjChk('show groups',chkEmptyGrp);return;}
+    if(k==='single-grp'){runObjChk('show groups',chkSingleGrp);return;}
+    if(k==='dup-obj'){runDupObj();return;}
+    if(k==='unused-obj'){runUnusedObj();return;}
+    if(k==='overlap-obj'){runOverlapObj();return;}
+    if(k==='stealth-rule'){runStealthCheck();return;}
+    if(k==='reserved-words'){runReservedWordsCheck();return;}
+    if(k==='svc-ping'){runSvcCheck(['icmp-proto','ICMP Protocol'],'echo-request or icmp-requests','Ping');return;}
+    if(k==='svc-ssh'){runSvcCheck(['ssh'],'ssh_version_2','SSH');return;}
+    scanRB(layers,function(){return null;});
+}
+
+function chkDisabled(r){return r.enabled===false?'Rule is disabled':null;}
+function chkNoHits(r){if(!r.hits)return null;var days=getCfg()||90,ref=Date.now()-days*24*3600*1000;if(r.hits.value===0||r.hits.value==='0')return'Zero hits';if(r.hits['last-date']&&r.hits['last-date'].posix){var lh=Number(r.hits['last-date'].posix)*1000;if(lh<ref)return'Last hit '+Math.floor((Date.now()-lh)/864e5)+' days ago';}return null;}
+function chkAnyAnyAccept(r,ln,om){
+    var isA=function(f){if(!f)return true;if(Array.isArray(f))return f.length===1&&(f[0]===ANY||(f[0]&&f[0].uid===ANY)||(typeof f[0]==='object'&&f[0].name==='Any'));return f===ANY;};
+    var act=typeof r.action==='string'?(r.action===ACCEPT?'Accept':r.action===DROP?'Drop':r.action===REJ?'Reject':om[r.action]?om[r.action].name:''):(r.action?r.action.name||'':'');
+    if(act.toLowerCase()!=='accept')return null;
+    var cnt=0,which=[];
+    if(isA(r.source)){cnt++;which.push('Src');}if(isA(r.destination)){cnt++;which.push('Dst');}if(isA(r.service)){cnt++;which.push('Svc');}
+    return cnt>=2?which.join('+')+' = Any, Action = Accept':null;
+}
+function chkUnnamed(r){return!r.name||!r.name.trim()||/^Rule \d+$/i.test(r.name)?'No descriptive name':null;}
+function chkNoCmt(r){return!r.comments||!r.comments.trim()?'No comment':null;}
+var TEMP_RE=/\b(test|tmp|temp|temporary|testing|todo|fixme|hack|remove|delete.?me|placeholder|wip|work.?in.?progress)\b/i;
+function chkTemp(r){var h=[];if(r.name&&TEMP_RE.test(r.name))h.push('Name: "'+r.name.match(TEMP_RE)[0]+'"');if(r.comments&&TEMP_RE.test(r.comments))h.push('Comment: "'+r.comments.match(TEMP_RE)[0]+'"');return h.length?h.join('; '):null;}
+function chkCritNoLog(r,ln,om){var act=typeof r.action==='string'?(r.action===ACCEPT?'Accept':r.action===DROP?'Drop':r.action===REJ?'Reject':om[r.action]?om[r.action].name:''):(r.action?r.action.name||'':'');if(act.toLowerCase()==='drop'||act.toLowerCase()==='reject'){if(!r.track)return act+' rule, no logging';if(typeof r.track==='object'){var tt=om[r.track.type]?om[r.track.type].name:(r.track.type||'');if(!tt||tt.toLowerCase()==='none')return act+' rule, logging off';}}return null;}
+function chkAlertNoLog(r,ln,om){if(!r.track||typeof r.track!=='object')return null;if(r.track.alert&&r.track.alert!=='none'){var tt=om[r.track.type]?om[r.track.type].name:(r.track.type||'');if(!tt||tt.toLowerCase()==='none')return'Alert set, logging off';}return null;}
+function chkShadowed(){return null;}function chkDup(){return null;}function chkLargeSec(){return null;}
+
+function runObjChk(cmd,fn){showLdg('Querying...');var cb='_oc'+(++cbi);window[cb]=function(r){delete window[cb];var d=apiResp(r);if(!d){showNR('Query failed.');return;}var res=fn(d);curRes=res;displayObjRes(res);setSt('ok',res.length+' finding(s)');document.getElementById('expBtn').style.display=res.length?'inline-flex':'none';};try{apiCall(cmd,{limit:500,'details-level':'full'},cb);}catch(e){showNR('API failed.');}}
+function chkEmptyGrp(d){return(d.objects||[]).filter(function(g){return!g.members||!g.members.length;}).map(function(g){return{name:g.name,uid:g.uid,type:'group',color:g.color,finding:'No members'};});}
+function chkSingleGrp(d){return(d.objects||[]).filter(function(g){return g.members&&g.members.length===1;}).map(function(g){return{name:g.name,uid:g.uid,type:'group',color:g.color,mn:(g.members[0].name||g.members[0]),finding:'Only 1 member'};});}
+
+function runDupObj(){
+    showLdg('Checking duplicates...');
+    var data={host:[],network:[],group:[],gateway:[],management:[],dynamic:[],address_range:[],domain:[]};
+    var steps=[
+        {cmd:'show hosts',key:'objects',t:'host'},
+        {cmd:'show networks',key:'objects',t:'network'},
+        {cmd:'show groups',key:'objects',t:'group'},
+        {cmd:'show gateways-and-servers',key:'objects',t:'gateway'},
+        {cmd:'show dynamic-objects',key:'objects',t:'dynamic'},
+        {cmd:'show address-ranges',key:'objects',t:'address_range'},
+        {cmd:'show dns-domains',key:'objects',t:'domain'}
+    ];
+    var si=0;
+    function next(){
+        if(si>=steps.length){analyzeDups(data);return;}
+        var c=steps[si];dl('Dup: '+c.cmd,'in');setSt('ld','Fetching '+c.t+'...');
+        fetchAll(c.cmd,c.key,function(objs){data[c.t]=objs;si++;next();});
+    }
+    next();
+}
+function fetchAll(cmd,key,done,acc,off){
+    acc=acc||[];off=off||0;var cb='_fa'+(++cbi);
+    window[cb]=function(r){delete window[cb];var d=apiResp(r);if(d){acc=acc.concat(d[key]||[]);if(d.to<d.total){fetchAll(cmd,key,done,acc,d.to);return;}}done(acc);};
+    try{apiCall(cmd,{limit:500,offset:off,'details-level':'full'},cb);}catch(e){done(acc);}
+}
+function analyzeDups(data){
+    var dups=[];
+    function isDef(n){return CP_DEF.indexOf(n)>=0;}
+    var m={};data.host.forEach(function(h){if(isDef(h.name))return;var k=h['ipv4-address']||h['ipv6-address']||'';if(!k)return;if(!m[k])m[k]=[];m[k].push({name:h.name,uid:h.uid,type:'host',color:h.color});});
+    Object.keys(m).forEach(function(k){if(m[k].length>1)dups.push({label:'Duplicate IP: '+k,objs:m[k]});});
+    m={};data.network.forEach(function(n){if(isDef(n.name))return;var k=(n.subnet4||n.subnet6||'')+'/'+(n['mask-length4']||n['mask-length']||n['subnet-mask']||'');if(k==='/')return;if(!m[k])m[k]=[];m[k].push({name:n.name,uid:n.uid,type:'network',color:n.color});});
+    Object.keys(m).forEach(function(k){if(m[k].length>1)dups.push({label:'Duplicate subnet: '+k,objs:m[k]});});
+    m={};data.group.forEach(function(g){if(isDef(g.name)||!g.members||!g.members.length)return;var k=g.members.map(function(x){return x.uid||x;}).sort().join(',');if(!m[k])m[k]=[];m[k].push({name:g.name,uid:g.uid,type:'group',color:g.color});});
+    Object.keys(m).forEach(function(k){if(m[k].length>1)dups.push({label:'Identical group members',objs:m[k]});});
+    m={};var gwMgmt=data.gateway.concat(data.management||[]);
+    gwMgmt.forEach(function(o){if(isDef(o.name))return;var ip=o['ipv4-address']||o['ipv6-address']||'';if(!ip)return;var t=o.type;var ico='gateway';if(t&&(t.indexOf('management')>=0||t==='CpmiHostCkp'))ico='management';if(!m[ip])m[ip]=[];m[ip].push({name:o.name,uid:o.uid,type:ico,color:o.color});});
+    Object.keys(m).forEach(function(k){if(m[k].length>1)dups.push({label:'Duplicate gateway/mgmt IP: '+k,objs:m[k]});});
+    m={};data.dynamic.forEach(function(o){if(isDef(o.name))return;var k=o['ipv4-address']||o.name||'';if(!m[k])m[k]=[];m[k].push({name:o.name,uid:o.uid,type:'dynamic',color:o.color});});
+    Object.keys(m).forEach(function(k){if(m[k].length>1)dups.push({label:'Duplicate dynamic object: '+k,objs:m[k]});});
+    m={};data.address_range.forEach(function(o){if(isDef(o.name))return;var k=(o['ipv4-address-first']||'')+'–'+(o['ipv4-address-last']||'');if(k==='–')return;if(!m[k])m[k]=[];m[k].push({name:o.name,uid:o.uid,type:'address_range',color:o.color});});
+    Object.keys(m).forEach(function(k){if(m[k].length>1)dups.push({label:'Duplicate range: '+k,objs:m[k]});});
+    m={};data.domain.forEach(function(o){if(isDef(o.name))return;var k=o.name||'';if(!m[k])m[k]=[];m[k].push({name:o.name,uid:o.uid,type:'domain',color:o.color});});
+    Object.keys(m).forEach(function(k){if(m[k].length>1)dups.push({label:'Duplicate domain: '+k,objs:m[k]});});
+    if(!dups.length){showNR();setSt('ok','0 findings');return;}
+    lastDups=dups;
+    var allO=[];dups.forEach(function(d,di){d.objs.forEach(function(o){o._di=di;allO.push(o);});});
+    var idx=0;
+    function chkWu(){
+        if(idx>=allO.length){buildDupRes(dups);return;}
+        setSt('ld','Usage '+(idx+1)+'/'+allO.length);
+        var o=allO[idx];var cb='_wu'+(++cbi);
+        window[cb]=function(r){delete window[cb];var d=apiResp(r);o.usedCount=d&&d['used-directly']?d['used-directly'].total:(d?0:-1);idx++;chkWu();};
+        try{apiCall('where-used',{name:o.name},cb);}catch(e){o.usedCount=-1;idx++;chkWu();}
+    }
+    chkWu();
+}
+function rescanDupItem(di){
+    if(!lastDups||!lastDups[di])return;
+    var d=lastDups[di],allO=d.objs,idx=0;
+    setSt('ld','Re-checking...');
+    function chkWu(){
+        if(idx>=allO.length){buildDupRes(lastDups);setSt('ok',curRes.length+' finding(s)');return;}
+        var o=allO[idx];var cb='_rwu'+(++cbi);
+        window[cb]=function(r){delete window[cb];var d=apiResp(r);o.usedCount=d&&d['used-directly']?d['used-directly'].total:(d?0:-1);idx++;chkWu();};
+        try{apiCall('where-used',{name:o.name},cb);}catch(e){o.usedCount=-1;idx++;chkWu();}
+    }
+    chkWu();
+}
+function buildDupRes(dups){
+    dups.forEach(function(d){
+        d.objs=d.objs.filter(function(o){
+            if(o.name.indexOf('Net_')===0&&o.usedCount===0)return false;
+            return true;
+        });
+    });
+    dups=dups.filter(function(d){return d.objs.length>=2;});
+    lastDups=dups;curRes=dups;displayDupRes(dups);
+    setSt('ok',dups.length+' finding(s)');
+    document.getElementById('expBtn').style.display=dups.length?'inline-flex':'none';
+}
+
+var svcBad=[],svcGood='',svcNameMap={},svcLoaded=false;
+function runSvcCheck(badNames,goodName,label){
+    svcBad=Array.isArray(badNames)?badNames:[badNames];
+    svcGood=goodName;
+    var layers=getLayers();if(!layers.length){showNR('No layers.');return;}
+    if(svcLoaded){doSvcScan(layers);return;}
+    showLdg('Loading services...');
+    if(apiMode==='commit'){
+        var cmds=[
+            'show services-tcp limit 500 details-level standard --format json',
+            'show services-udp limit 500 details-level standard --format json',
+            'show services-icmp limit 500 details-level standard --format json',
+            'show services-other limit 500 details-level standard --format json',
+            'show service-groups limit 500 details-level standard --format json'
+        ];
+        var cb='_svcBatch'+(++cbi);
+        window[cb]=function(r){
+            delete window[cb];
+            var results=Array.isArray(r)?r:(r&&r.response?[r.response]:[]);
+            for(var ri=0;ri<results.length;ri++){
+                var d=results[ri];if(!d)continue;
+                var objs=d.objects||[];
+                if(ri<4){objs.forEach(function(o){if(o.uid)svcNameMap[o.uid]=o.name||'';});}
+                else{buildGrpMap(objs);}
+            }
+            svcLoaded=true;doSvcScan(layers);
+        };
+        smxProxy.sendRequest('request-commit',{commands:cmds},cb);
+    }else{
+        var svcTypes=['show services-tcp','show services-udp','show services-icmp','show services-other'];
+        var step=0;
+        function nextStep(){
+            if(step<svcTypes.length){
+                var cmd=svcTypes[step];step++;
+                fetchAll(cmd,'objects',function(objs){
+                    objs.forEach(function(o){if(o.uid)svcNameMap[o.uid]=o.name||'';});
+                    nextStep();
+                });
+            }else{
+                fetchAll('show service-groups','objects',function(grps){
+                    buildGrpMap(grps);svcLoaded=true;doSvcScan(layers);
+                });
+            }
+        }
+        nextStep();
+    }
+}
+function buildGrpMap(grps){
+    grps.forEach(function(g){
+        if(g.uid)svcNameMap[g.uid]=g.name||'';
+        if(g.members&&g.members.length){
+            var memberNames=g.members.map(function(m){return typeof m==='string'?(svcNameMap[m]||''):(m.name||'');});
+            svcNameMap['grp:'+g.name]=memberNames;
+            if(g.uid)svcNameMap['grp:'+g.uid]=memberNames;
+        }
+    });
+}
+function isBadSvc(name){
+    for(var i=0;i<svcBad.length;i++){if(name===svcBad[i])return name;}
+    return null;
+}
+function doSvcScan(layers){
+    scanRB(layers,function(rule,ln,om){
+        var svcs=rule.service;if(!svcs)svcs=[];
+        if(!Array.isArray(svcs))svcs=[svcs];
+        var content=rule.content;if(!content)content=[];
+        if(!Array.isArray(content))content=[content];
+        var allItems=svcs.concat(content);
+        function getName(ref){
+            if(!ref)return'';
+            if(typeof ref==='string'){var o=om[ref];return o?(o.name||''):(svcNameMap[ref]||'');}
+            if(ref.uid){var o2=om[ref.uid];return o2?(o2.name||''):(svcNameMap[ref.uid]||ref.name||'');}
+            return ref.name||'';
+        }
+        function findBad(items,depth){
+            if(depth>5)return null;
+            for(var i=0;i<items.length;i++){
+                var name=getName(items[i]);
+                var bad=isBadSvc(name);
+                if(bad)return bad;
+                var uid=typeof items[i]==='string'?items[i]:(items[i]&&items[i].uid?items[i].uid:'');
+                var members=svcNameMap['grp:'+name]||svcNameMap['grp:'+uid]||null;
+                if(members){
+                    for(var j=0;j<members.length;j++){
+                        var mb=isBadSvc(members[j]);if(mb)return mb;
+                        var nested=svcNameMap['grp:'+members[j]]||null;
+                        if(nested){for(var k=0;k<nested.length;k++){var nb=isBadSvc(nested[k]);if(nb)return nb;}}
+                    }
+                }
+                var obj=typeof items[i]==='string'?om[items[i]]:(items[i]&&items[i].uid?om[items[i].uid]:items[i]);
+                if(obj&&obj.members&&Array.isArray(obj.members)){
+                    var r=findBad(obj.members,depth+1);if(r)return r;
+                }
+            }
+            return null;
+        }
+        var found=findBad(allItems,0);
+        if(found)return'Uses "'+found+'" (directly or in group) \u2014 replace with "'+svcGood+'"';
+        return null;
+    });
+}
+
+var GW_TYPES=['simple-gateway','simple-cluster','CpmiGatewayCluster'];
+var MGMT_TYPES=['checkpoint-host','CpmiHostCkp'];
+function runStealthCheck(){
+    showLdg('Loading gateways and management servers...');
+    fetchAll('show gateways-and-servers','objects',function(gwObjs){
+        var allGW=[],allMgmt=[],uidMap={};
+        gwObjs.forEach(function(o){
+            uidMap[o.uid]={name:o.name,type:o.type,uid:o.uid};
+            if(GW_TYPES.indexOf(o.type)>=0)allGW.push(o);
+            else if(MGMT_TYPES.indexOf(o.type)>=0)allMgmt.push(o);
+        });
+        if(!allGW.length&&!allMgmt.length){showNR('No gateways or management servers found.');setSt('ok','0 findings');return;}
+        var v=document.getElementById('pkgSel').value;
+        var pkgList=[];
+        if(v==='all'||v===''){pkgList=pkgs.slice();}
+        else{var p=pkgs[parseInt(v)];if(p)pkgList=[p];}
+        if(!pkgList.length){showNR('No packages.');return;}
+        var results=[];
+        var pi=0;
+        function nextPkg(){
+            if(pi>=pkgList.length){displayStealthRes(results,allGW,allMgmt);return;}
+            var pkg=pkgList[pi];pi++;
+            var targets=pkg['installation-targets'];
+            var targetGW=[],targetMgmt=[];
+            if(!targets||targets==='all'||(Array.isArray(targets)&&targets.length===0)){
+                targetGW=allGW.slice();
+            }else{
+                var tUids=[];
+                if(Array.isArray(targets))targets.forEach(function(t){tUids.push(t.uid||t);});
+                allGW.forEach(function(g){if(tUids.indexOf(g.uid)>=0)targetGW.push(g);});
+            }
+            targetMgmt=allMgmt.slice();
+            var required={};
+            targetGW.forEach(function(g){required[g.uid]={name:g.name,type:'gateway',color:g.color,found:false};});
+            targetMgmt.forEach(function(m){required[m.uid]={name:m.name,type:'management',color:m.color,found:false};});
+            var layers=(pkg['access-layers']||[]).map(function(l){return{name:l.name,uid:l.uid,pkg:pkg.name};});
+            if(!layers.length){results.push({pkg:pkg.name,status:'no-layers',required:required,rules:[]});nextPkg();return;}
+            var stealthRules=[],totalRules=0;
+            var li=0;
+            function nextLayer(){
+                if(li>=layers.length){evalStealth(pkg,required,stealthRules,totalRules,results,uidMap,gwObjs);nextPkg();return;}
+                var layer=layers[li];li++;
+                scanLayerForStealth(layer,required,stealthRules,uidMap,gwObjs,function(total){
+                    totalRules+=total;nextLayer();
+                });
+            }
+            nextLayer();
+        }
+        nextPkg();
+    });
+}
+function scanLayerForStealth(layer,required,stealthRules,uidMap,gwObjs,done){
+    var total=0;var inlQ=[];
+    function fetchPage(lyr,off){
+        var cb='_st'+(++cbi);
+        window[cb]=function(r){
+            delete window[cb];var d=apiResp(r);
+            if(!d){procInl();return;}
+            var rb=d.rulebase||[],dict=d['objects-dictionary']||[],om={};
+            dict.forEach(function(o){om[o.uid]=o;});
+            rb.forEach(function(item){
+                if(item.type==='access-section'&&item.rulebase){
+                    item.rulebase.forEach(function(rule){if(rule.type==='access-rule'){total++;checkStealthRule(rule,lyr,om,required,stealthRules,total,uidMap,gwObjs);}});
+                }else if(item.type==='access-rule'){total++;checkStealthRule(item,lyr,om,required,stealthRules,total,uidMap,gwObjs);}
+            });
+            if(d.to<d.total)fetchPage(lyr,d.to);else procInl();
+        };
+        apiCall('show access-rulebase',{'name':lyr.name,'details-level':'full','use-object-dictionary':true,'limit':500,'offset':off},cb);
+    }
+    function procInl(){
+        if(inlQ.length){var il=inlQ.shift();fetchPage(il,0);return;}
+        done(total);
+    }
+    fetchPage(layer,0);
+}
+function checkStealthRule(rule,layer,om,required,stealthRules,rulePos,uidMap,gwObjs){
+    if(rule.enabled===false)return;
+    var act=typeof rule.action==='string'?rule.action:(rule.action?rule.action.uid||rule.action:'');
+    var actName=om[act]?(om[act].name||''):(act===DROP?'Drop':act===REJ?'Reject':'');
+    if(!actName)actName=typeof rule.action==='object'?(rule.action.name||''):'';
+    var isDrop=actName.toLowerCase()==='drop'||actName.toLowerCase()==='reject';
+    if(!isDrop)return;
+    var src=rule.source;
+    var srcIsAny=false;
+    if(!src)srcIsAny=true;
+    else if(Array.isArray(src)&&src.length===1){
+        var s0=src[0];var suid=typeof s0==='string'?s0:(s0.uid||'');
+        if(suid===ANY)srcIsAny=true;
+    }
+    if(!srcIsAny)return;
+    var dstUids={};
+    var dst=rule.destination;if(!dst)return;
+    if(!Array.isArray(dst))dst=[dst];
+    function collectDst(items,depth){
+        if(depth>5)return;
+        items.forEach(function(d){
+            var uid=typeof d==='string'?d:(d.uid||'');
+            if(!uid)return;
+            dstUids[uid]=true;
+            var obj=om[uid];
+            if(obj){
+                dstUids[obj.uid]=true;
+                if(obj.members&&Array.isArray(obj.members)){
+                    collectDst(obj.members,depth+1);
+                }
+            }
+        });
+    }
+    collectDst(dst,0);
+    var coveredAny=false;
+    Object.keys(required).forEach(function(uid){
+        if(dstUids[uid]){required[uid].found=true;coveredAny=true;}
+    });
+    if(dstUids[ANY]){
+        return;
+    }
+    if(coveredAny){
+        var rn=rule['rule-number'];
+        if(layer.parentRuleNum)rn=layer.parentRuleNum+'.'+rn;
+        stealthRules.push({rule:rule,ruleNum:rn,rulePos:rulePos,layerName:layer.name,pkgName:layer.pkg});
+    }
+}
+function evalStealth(pkg,required,stealthRules,totalRules,results,uidMap,gwObjs){
+    var missing=[],covered=[];
+    Object.keys(required).forEach(function(uid){
+        var r=required[uid];
+        if(r.found)covered.push(r);
+        else missing.push(r);
+    });
+    var threshold=Math.ceil(totalRules*0.3);
+    var lateRules=stealthRules.filter(function(s){return s.rulePos>threshold;});
+    results.push({
+        pkg:pkg.name,
+        required:required,
+        missing:missing,
+        covered:covered,
+        stealthRules:stealthRules,
+        lateRules:lateRules,
+        totalRules:totalRules,
+        threshold:threshold
+    });
+}
+function displayStealthRes(results,allGW,allMgmt){
+    var allOk=true;
+    var h='';
+    results.forEach(function(r){
+        var hasMissing=r.missing&&r.missing.length;
+        var hasCovered=r.covered&&r.covered.length;
+        var noRule=r.stealthRules&&!r.stealthRules.length&&!r.status;
+        var hasLate=r.lateRules&&r.lateRules.length;
+        if(hasMissing||noRule||hasLate||r.status==='no-layers')allOk=false;
+        h+='<div class="obj-r"><div style="font-size:13px;font-weight:700;margin-bottom:6px">'+esc(r.pkg)+'</div>';
+        if(hasLate)r.lateRules.forEach(function(lr){h+='<div class="obj-f">\u26A0 Stealth rule #'+esc(String(lr.ruleNum))+' at position '+lr.rulePos+' is beyond 30% ('+r.threshold+'/'+r.totalRules+')</div>';});
+        if(r.status==='no-layers')h+='<div class="obj-f">\u26A0 No access layers in package</div>';
+        if(hasCovered){
+            h+='<div style="color:var(--green);font-size:12px;font-weight:600;margin:6px 0 3px">\u2713 Covered</div>';
+            r.covered.forEach(function(o){
+                var icoType=o.type==='management'?'management':'gateway';
+                h+='<div class="obj-row">'+objIco(icoType,o.color)+'<span style="color:'+objClr(o.color)+';font-size:12px">'+esc(o.name)+'</span> <span style="font-size:10px;color:var(--t3)">'+esc(o.type)+'</span></div>';
+            });
+        }
+        if(hasMissing){
+            h+='<div style="color:var(--crit);font-size:12px;font-weight:700;margin:6px 0 3px">Not covered:</div>';
+            r.missing.forEach(function(o){
+                var icoType=o.type==='management'?'management':'gateway';
+                h+='<div class="obj-row">'+objIco(icoType,o.color)+'<span style="color:'+objClr(o.color)+';font-size:12px">'+esc(o.name)+'</span> <span style="font-size:10px;color:var(--t3)">'+esc(o.type)+'</span></div>';
+            });
+        }
+        if(r.stealthRules&&r.stealthRules.length){
+            h+='<div style="margin-top:5px;font-size:11px;color:var(--t3)">';
+            r.stealthRules.forEach(function(sr){h+='Rule #'+esc(String(sr.ruleNum))+' in '+esc(sr.layerName)+'<br>';});
+            h+='</div>';
+        }
+        h+='</div>';
+    });
+    if(allOk&&results.length){
+        h='<div class="sum"><span class="sum-n" style="color:var(--green)">\u2713</span><span class="sum-l">All policies have proper stealth rules</span></div>'+h;
+    }else{
+        var totalIssues=0;results.forEach(function(r){if(r.missing)totalIssues+=r.missing.length;if(r.stealthRules&&!r.stealthRules.length)totalIssues++;if(r.lateRules)totalIssues+=r.lateRules.length;});
+        h='<div class="sum"><span class="sum-n">'+totalIssues+'</span><span class="sum-l">issue'+(totalIssues!==1?'s':'')+' found</span></div>'+
+           '<div style="padding:8px 10px;font-size:12px;color:var(--t2);line-height:1.7;border:1px solid var(--brd);border-radius:var(--r);margin-bottom:10px;background:var(--bg3)">'+
+           'A stealth rule should Drop all traffic to gateways and management servers (Src=Any, Dst=GW+Mgmt, Action=Drop), positioned in the first 30% of the rulebase. '+
+           '<a href="https://community.checkpoint.com/t5/Firewall-and-Security-Management/Auditing-the-Auditor-A-Real-World-Test-of-Check-Point-s/m-p/260947#M61391" target="_blank" style="color:var(--blue);text-decoration:none">More info.</a></div>'+h;
+    }
+    curRes=results;
+    document.getElementById('rc0').innerHTML=h;
+    setSt('ok',allOk?'Stealth rules OK':'Issues found');
+    document.getElementById('expBtn').style.display='none';
+}
+
+var RW=new Set(["Account","Alert","All","Any","Apr","April","Aug","August","Auth","AuthAlert","CPM","Dec","December","Duplicate","FW1","Feb","February","Fri","Friday","Global","Jan","January","Jul","July","Jun","June","LOG","Long","Mail","Mar","March","May","Mon","Monday","Nov","November","Oct","October","Sat","Saturday","Sep","September","Short","SnmpTrap","Sun","Sunday","Thu","Thursday","Tue","Tuesday","UserDefined","Web","Wed","Wednesday","accept","admin","all","and","any","apr","april","art","aug","august","black","blackboxs","block","blue","broadcasts","call","comment","conn","cp_mgmt","cyan","dark","date","day","debug","dec","december","deffunc","define","delete","delstate","diameter","direction","dns_atma","do","domains","drop","dst","dynamic","dynobj_list","edge","else","expcall","expires","export","fcall","feb","february","firebrick","firewall-1","foreground","forest","format","fri","friday","from","full_service_list","fw-1","fw1","fwadmin","fwline","fwrule","gateways","get","getstate","gold","gray","green","hashsize","hold","host","hosts","if","ifaddr","ifid","implies","in","inbound","instate","interface","interfaces","iot","ip_list","ipsecdata","ipsecmethods","ipv6","is","jan","january","jul","july","jun","june","kbuf","keep","limit","local","localhost","log","logics","magenta","mail","mar","march","may","mday","medium","modify","mon","monday","month","mortrap","navy","netobj","netof","nets","nexpires","not","nov","november","oct","october","or","orange","origdport","origdst","origsport","origsrc","other","outbound","packet","packetid","packetlen","pass","r_arg","r_call_counter","r_cdir","r_cflags","r_chandler","r_client_community","r_client_ifs_grp","r_community_left","r_connarg","r_crule","r_ctimeout","r_ctype","r_curr_feature_id","r_data_offset","r_dtmatch","r_dtmflags","r_entry","r_g_offset","r_ipv6","r_mapped_ip","r_mflags","r_mhandler","r_mtimeout","r_oldcdir","r_pflags","r_profile_id","r_ro_client_community","r_ro_dst_sr","r_ro_server_community","r_ro_src_sr","r_scvres","r_server_community","r_server_ifs_grp","r_service_id","r_simple_hdrlen","r_spii_ret","r_spii_tcpseq","r_spii_uuid1","r_spii_uuid2","r_spii_uuid3","r_spii_uuid4","r_str_dport","r_str_dst","r_str_ipp","r_str_sport","r_str_src","r_user","record","red","refresh","reject","resourceobj","routers","rpc","rtf","rulenum_list","sat","saturday","sctp","second","sep","september","servers","service_list","servobj","set","setstate","sienna","skipme","skippeer","smtp","spoof","spoofalert","sr","src","static","sun","sunday","switchs","sync","target_list","targets","tcpt_list","thu","thursday","to","tod","tracks","tue","tuesday","ufp","valid_addrs_list","vanish","vars","wasskipped","wed","wednesday","while","wmp_sami","xlatedport","xlatedst","xlatemethod","xlatesport","xlatesrc","xor","year","yellow","zero","zero_ip"]);
+var ILLEGAL_RE=/[+*(){}\[\]?!#<>=,:;'"` \/\\\t@$%^|&~]/;
+var SR_RE=/^[Ss][Rr]\d/;
+var rwCachedObjs=null;
+
+function runReservedWordsCheck(){
+    if(rwCachedObjs){analyzeReservedWords(rwCachedObjs);return;}
+    showLdg('Loading objects...');
+    var allObjs=[];
+    var steps=[
+        {cmd:'show hosts',key:'objects',t:'host'},
+        {cmd:'show networks',key:'objects',t:'network'},
+        {cmd:'show groups',key:'objects',t:'group'},
+        {cmd:'show gateways-and-servers',key:'objects',t:'gateway'},
+        {cmd:'show address-ranges',key:'objects',t:'address_range'},
+        {cmd:'show dns-domains',key:'objects',t:'domain'},
+        {cmd:'show dynamic-objects',key:'objects',t:'dynamic'}
+    ];
+    var si=0;
+    function next(){
+        if(si>=steps.length){rwCachedObjs=allObjs;analyzeReservedWords(allObjs);return;}
+        var c=steps[si];si++;setSt('ld','Fetching '+c.t+'...');
+        fetchAll(c.cmd,c.key,function(objs){
+            objs.forEach(function(o){
+                if(CP_DEF.indexOf(o.name)>=0)return;
+                var tp=c.t;
+                if(tp==='gateway'&&o.type&&(MGMT_TYPES.indexOf(o.type)>=0))tp='management';
+                allObjs.push({name:o.name,uid:o.uid,type:tp,color:o.color});
+            });
+            next();
+        });
+    }
+    next();
+}
+function rwToggleSpace(cb){
+    var hide=cb.checked;
+    var items=document.querySelectorAll('#rc0 .obj-r[data-space-only="true"]');
+    items.forEach(function(el){el.style.display=hide?'none':'';});
+    var numEl=document.querySelector('#rc0 .sum-n[data-total]');
+    var lbl=document.getElementById('rw-sum');
+    if(numEl&&lbl){
+        var total=parseInt(numEl.getAttribute('data-total'))||0;
+        var spaceCount=parseInt(numEl.getAttribute('data-space'))||0;
+        var checked=numEl.getAttribute('data-checked')||'';
+        var shown=hide?total-spaceCount:total;
+        numEl.textContent=shown;
+        lbl.textContent='object'+(shown!==1?'s':'')+' with issues (of '+checked+' checked)';
+    }
+}
+function analyzeReservedWords(objs){
+    var findings=[];
+    objs.forEach(function(o){
+        var errs=[],spaceOnly=true;
+        var name=o.name||'';
+        var illChars=[];
+        for(var i=0;i<name.length;i++){
+            var c=name[i];
+            if(ILLEGAL_RE.test(c)){
+                var label=c===' '?'space':c==='\t'?'tab':c;
+                if(illChars.indexOf(label)<0)illChars.push(label);
+                if(c!==' ')spaceOnly=false;
+            }
+        }
+        if(illChars.length)errs.push({msg:'Illegal character(s): '+illChars.join(' '),spaceOnly:illChars.length===1&&illChars[0]==='space'});
+        if(SR_RE.test(name)){errs.push({msg:'Starts with [Ss][Rr]<digit>',spaceOnly:false});spaceOnly=false;}
+        var rwFound=[];
+        var segs=name.split('-');
+        for(var j=0;j<segs.length;j++){if(RW.has(segs[j])&&rwFound.indexOf(segs[j])<0)rwFound.push(segs[j]);}
+        if(RW.has(name)&&rwFound.indexOf(name)<0)rwFound.push(name);
+        if(rwFound.length){errs.push({msg:'Reserved word(s): '+rwFound.join(', '),spaceOnly:false});spaceOnly=false;}
+        if(errs.length)findings.push({name:o.name,uid:o.uid,type:o.type,color:o.color,errors:errs,spaceOnly:errs.every(function(e){return e.spaceOnly;})});
+    });
+    curRes=findings;
+    displayReservedRes(findings,objs.length);
+    setSt('ok',findings.length+' finding(s)');
+    document.getElementById('expBtn').style.display=findings.length?'inline-flex':'none';
+}
+function displayReservedRes(findings,totalObjs){
+    if(!findings.length){
+        document.getElementById('rc0').innerHTML='<div class="nr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><p>No reserved words or illegal characters found in '+totalObjs+' objects.</p></div>';
+        return;
+    }
+    var spaceCount=findings.filter(function(f){return f.spaceOnly;}).length;
+    var h='<div class="sum"><span class="sum-n" data-total="'+findings.length+'" data-space="'+spaceCount+'" data-checked="'+totalObjs+'">'+findings.length+'</span><span class="sum-l" id="rw-sum">object'+(findings.length!==1?'s':'')+' with issues (of '+totalObjs+' checked)</span></div>';
+    h+='<div style="margin-bottom:10px"><label style="font-size:12px;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px"><input type="checkbox" onchange="rwToggleSpace(this)" style="accent-color:var(--blue)"> Exclude spaces from check</label></div>';
+    findings.forEach(function(f){
+        h+='<div class="obj-r" data-space-only="'+(f.spaceOnly?'true':'false')+'"><div class="obj-row">'+objIco(f.type||'host',f.color)+'<span style="font-weight:600;color:'+objClr(f.color)+'">'+esc(f.name)+'</span> <span style="font-size:10px;color:var(--t3)">'+esc(f.type)+'</span></div>';
+        f.errors.forEach(function(e){h+='<div style="font-size:11px;color:var(--high);margin-top:2px;padding-left:17px">'+esc(e.msg)+'</div>';});
+        h+='</div>';
+    });
+    document.getElementById('rc0').innerHTML=h;
+}
+
+function runUnusedObj(){
+    document.getElementById('rc0').innerHTML=
+        '<div style="padding:15px 10px;font-size:12px;color:var(--t2);line-height:1.7">'+
+        '<p style="margin-bottom:10px">To find unused objects, use the built-in SmartConsole tools:</p>'+
+        '<p style="margin-bottom:8px"><strong>Object Explorer</strong><br>'+
+        '<span style="font-size:11px;color:var(--t3)">Menu \u203A Manage \u203A Object Explorer \u203A Filter by "Not Used in Policy"</span><br>'+
+        '<a href="https://sc1.checkpoint.com/documents/R82/SmartConsole_OLH/EN/Topics-OLH/KwDlz4J6uuxrui4E-jj90w2.htm" target="_blank" style="color:var(--blue);font-size:11px;text-decoration:none">R82 Documentation \u2197</a></p>'+
+        '<p><strong>Global Object Explorer</strong> (MDS / Multi-Domain)<br>'+
+        '<span style="font-size:11px;color:var(--t3)">For Multi-Domain environments, use the Global Object Explorer</span><br>'+
+        '<a href="https://sc1.checkpoint.com/documents/R82/SmartConsole_OLH/EN/Topics-OLH/OwPZKKEqcdKdCCNa6lhdnw2.htm" target="_blank" style="color:var(--blue);font-size:11px;text-decoration:none">R82 Documentation \u2197</a></p>'+
+        '</div>';
+    setSt('ok','See Object Explorer');
+}
+
+function runOverlapObj(){
+    showLdg('Fetching networks and ranges...');
+    var nets=[],ranges=[];var step=0;
+    function next(){
+        if(step===0){dl('Overlap: show networks','in');setSt('ld','Fetching networks...');fetchAll('show networks','objects',function(objs){nets=objs;step++;next();});}
+        else if(step===1){dl('Overlap: show address-ranges','in');setSt('ld','Fetching ranges...');fetchAll('show address-ranges','objects',function(objs){ranges=objs;step++;next();});}
+        else{analyzeOverlaps(nets,ranges);}
+    }
+    next();
+}
+function ip2num(ip){if(!ip)return 0;var p=ip.split('.');return((+p[0])<<24|((+p[1])<<16)|((+p[2])<<8)|(+p[3]))>>>0;}
+function analyzeOverlaps(nets,ranges){
+    var items=[];
+    nets.forEach(function(n){
+        if(CP_DEF.indexOf(n.name)>=0)return;
+        var sub=n.subnet4||n.subnet6||'';var ml=n['mask-length4']||n['mask-length']||n['subnet-mask']||'';
+        if(!sub)return;
+        var start=ip2num(sub);
+        var bits=typeof ml==='number'?ml:parseInt(ml);
+        if(isNaN(bits)){
+            var m=ip2num(String(ml));bits=0;var v=m;for(var i=31;i>=0;i--){if((v>>i)&1)bits++;else break;}
+        }
+        var mask=bits===0?0:(0xFFFFFFFF<<(32-bits))>>>0;
+        var end=(start|~mask)>>>0;
+        items.push({name:n.name,uid:n.uid,type:'network',color:n.color,start:start,end:end,cidr:sub+'/'+bits});
+    });
+    ranges.forEach(function(r){
+        if(CP_DEF.indexOf(r.name)>=0)return;
+        var f=r['ipv4-address-first']||'';var l=r['ipv4-address-last']||'';
+        if(!f||!l)return;
+        items.push({name:r.name,uid:r.uid,type:'address_range',color:r.color,start:ip2num(f),end:ip2num(l),cidr:f+' \u2013 '+l});
+    });
+    var found=[],seen={};
+    for(var i=0;i<items.length;i++){
+        for(var j=i+1;j<items.length;j++){
+            var a=items[i],b=items[j];
+            if(a.start<=b.end&&b.start<=a.end){
+                var key=a.uid+'_'+b.uid;
+                if(!seen[key]){seen[key]=true;found.push({a:a,b:b});}
+            }
+        }
+    }
+    var res=[];
+    found.forEach(function(f){
+        res.push({
+            name:f.a.name+' \u2194 '+f.b.name,
+            finding:'Overlapping: '+f.a.cidr+' overlaps with '+f.b.cidr,
+            objs:[f.a,f.b]
+        });
+    });
+    curRes=res;
+    if(!res.length){showNR();setSt('ok','0 findings');return;}
+    displayOverlapRes(res);
+    setSt('ok',res.length+' overlap(s)');document.getElementById('expBtn').style.display=res.length?'inline-flex':'none';
+}
+function displayOverlapRes(res){
+    var h='<div class="sum"><span class="sum-n">'+res.length+'</span><span class="sum-l">overlap'+(res.length!==1?'s':'')+' found</span></div>';
+    res.forEach(function(r){
+        h+='<div class="obj-r"><div class="obj-f">\u26A0 '+esc(r.finding)+'</div><div style="margin-top:5px">';
+        r.objs.forEach(function(o){
+            h+='<div class="obj-row">'+objIco(o.type,o.color)+'<span style="font-weight:600;color:'+objClr(o.color)+'">'+esc(o.name)+'</span> <span style="font-size:10px;color:var(--t3)">'+esc(o.cidr)+'</span></div>';
+        });
+        h+='</div></div>';
+    });
+    document.getElementById('rc0').innerHTML=h;
+}
+
+function showLdg(m){document.getElementById('rc0').innerHTML='<div class="ldg"><div class="spin"></div><div class="ldg-t">'+esc(m)+'</div></div>';}
+function showNR(m){document.getElementById('rc0').innerHTML='<div class="nr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><p>'+(m||'No issues \u2014 policy looks clean!')+'</p></div>';}
+
+function displayRes(res){
+    if(!res.length){showNR();return;}
+    var t=T[curTask],h='<div class="sum"><span class="sum-n">'+res.length+'</span><span class="sum-l">finding'+(res.length!==1?'s':'')+' detected</span></div>';
+    if(t&&t.cfg)h+='<div class="cfg-i"><label>'+esc(t.cfgL)+'</label><input type="number" id="cfgV" value="'+t.cfgD+'" onchange="runTask()"></div>';
+    if(svcBad.length&&(curTask==='svc-ping'||curTask==='svc-ssh'))h+='<div style="padding:8px 10px;font-size:12px;color:var(--t2);line-height:1.7;border:1px solid var(--brd);border-radius:var(--r);margin-bottom:10px;background:var(--bg3)"><strong>Recommendation:</strong> In Object Explorer, search for <strong>'+svcBad.map(esc).join('</strong> / <strong>')+'</strong> and use <em>Replace</em> to replace with <strong>'+esc(svcGood)+'</strong>.</div>';
+    res.forEach(function(r,i){
+        h+='<div class="rc" id="r'+i+'"><div class="rh" onclick="document.getElementById(\'r'+i+'\').classList.toggle(\'ex\')">';
+        h+='<span class="rnum">#'+esc(String(r['rule-number']||'?'))+'</span>';
+        if(r.enabled===false)h+='<span class="rdis">Disabled</span>';
+        h+='<span class="rname">'+esc(r.name||'Unnamed')+'</span>';
+        h+='<button class="rgo" onclick="event.stopPropagation();goR(\''+r.uid+'\')">Go to \u2192</button></div>';
+        h+='<div class="rd"><div class="rfn">'+esc(r.finding||'')+'</div><div class="rdg">';
+        h+='<div><span class="rdi-l">Source</span><div class="rdi-v">'+esc(r._src||'-')+'</div></div>';
+        h+='<div><span class="rdi-l">Dest</span><div class="rdi-v">'+esc(r._dst||'-')+'</div></div>';
+        h+='<div><span class="rdi-l">Service</span><div class="rdi-v">'+esc(r._svc||'-')+'</div></div>';
+        h+='<div><span class="rdi-l">Action</span><div class="rdi-v">'+esc(r._act||'-')+'</div></div>';
+        h+='<div><span class="rdi-l">Track</span><div class="rdi-v">'+esc(r._trk||'-')+'</div></div>';
+        if(r.hits)h+='<div><span class="rdi-l">Hits</span><div class="rdi-v" style="color:'+((!r.hits.value||r.hits.value===0)?'var(--crit)':'var(--green)')+'">'+r.hits.value+'</div></div>';
+        h+='</div>';
+        var loc=(r.pkgName||'')+(r.layerName?' \u203A '+r.layerName:'')+(r.sectionName?' \u203A '+r.sectionName:'');
+        if(loc)h+='<div style="margin-top:4px;font-size:10px;color:var(--t3)">'+esc(loc)+'</div>';
+        if(r.comments&&r.comments.trim())h+='<div class="rcmt">'+esc(r.comments)+'</div>';
+        h+='</div></div>';
+    });
+    document.getElementById('rc0').innerHTML=h;
+}
+function displayObjRes(res){
+    if(!res.length){showNR();return;}
+    var h='<div class="sum"><span class="sum-n">'+res.length+'</span><span class="sum-l">finding'+(res.length!==1?'s':'')+'</span></div>';
+    res.forEach(function(r){
+        h+='<div class="obj-r"><div class="obj-row">'+objIco(r.type||'group',r.color)+'<span style="font-weight:600;color:'+objClr(r.color)+'">'+esc(r.name)+'</span></div>';
+        h+='<div class="obj-f">\u26A0 '+esc(r.finding)+'</div>'+(r.mn?'<div class="obj-m">Member: '+esc(r.mn)+'</div>':'')+'</div>';
+    });
+    document.getElementById('rc0').innerHTML=h;
+}
+function displayDupRes(dups){
+    if(!dups.length){showNR();return;}
+    var h='<div class="sum"><span class="sum-n">'+dups.length+'</span><span class="sum-l">duplicate group'+(dups.length!==1?'s':'')+' found</span></div>';
+    dups.forEach(function(d,di){
+        h+='<div class="obj-r"><div style="display:flex;align-items:center;gap:6px"><div class="obj-f" style="flex:1;margin:0">\u26A0 '+esc(d.label)+' ('+d.objs.length+' objects)</div>';
+        h+='<button class="btn-ico" onclick="rescanDupItem('+di+')" title="Re-scan this finding">'+ICO.rescan+'</button></div>';
+        h+='<div style="margin-top:5px">';
+        d.objs.forEach(function(o){
+            var hex=objClr(o.color);
+            h+='<div class="obj-row">'+objIco(o.type,o.color)+'<span style="font-weight:600;color:'+hex+'">'+esc(o.name)+'</span>';
+            if(o.usedCount===0)h+=' <span class="runu">Unused</span>';
+            else if(o.usedCount>0)h+=' <span style="font-size:10px;color:var(--t3)">'+o.usedCount+' rule(s)</span>';
+            h+='</div>';
+        });
+        h+='</div></div>';
+    });
+    document.getElementById('rc0').innerHTML=h;
+}
+function goR(uid){if(!uid)return;try{smxProxy.sendRequest('go-to-rule',{'rule-id':uid});}catch(e){}}
+
+function doExport(){if(!curRes||!curRes.length)return;var csv='Rule,Name,Package,Layer,Section,Source,Destination,Service,Action,Track,Finding\n';curRes.forEach(function(r){csv+=[r['rule-number']||'',ce(r.name||''),ce(r.pkgName||''),ce(r.layerName||''),ce(r.sectionName||''),ce(r._src||''),ce(r._dst||''),ce(r._svc||''),ce(r._act||''),ce(r._trk||''),ce(r.finding||r.label||'')].join(',')+'\n';});var b=new Blob([csv],{type:'text/csv;charset=utf-8;'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='toolbox-'+(curTask||'')+'-'+new Date().toISOString().slice(0,10)+'.csv';a.click();URL.revokeObjectURL(u);}
+function ce(s){s=String(s||'');return s.indexOf(',')>=0||s.indexOf('"')>=0?'"'+s.replace(/"/g,'""')+'"':s;}
+function getCfg(){var e=document.getElementById('cfgV');return e?parseInt(e.value,10):null;}
+function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
+function setSt(st,m){var d=document.getElementById('dot'),c=document.getElementById('cst'),sm=document.getElementById('sMsg');d.className='dot';if(st==='ld'){d.className='dot y';c.textContent='Loading...';}else if(st==='er'){d.className='dot r';c.textContent='Error';}else{d.className='dot g';c.textContent='Ready';}if(m&&st!=='ld')sm.textContent=m;else if(st==='ld')sm.textContent='Scanning...';}
+function dl(){}
+function enableDemo(){pkgs=[{name:'Standard',uid:'d','access-layers':[{name:'Standard Network',uid:'dn'}],'installation-targets':'all'}];fillPkg();}
+</script>
+</body>
+</html>
